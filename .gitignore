@@ -6,3 +6,5 @@ k8s/secret.yaml
 .terraform
 .terraform.lock.hcl
 terraform.tfvars
+*.tfstate
+*.tfstate.backup

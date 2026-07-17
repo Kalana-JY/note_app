@@ -1,0 +1,60 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write # needed for OIDC auth to AWS
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  ECR_BACKEND: notes-backend
+  ECR_FRONTEND: notes-frontend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-notes-app
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & push backend
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          docker build -t $REGISTRY/$ECR_BACKEND:${{ github.sha }} ./backend
+          docker push $REGISTRY/$ECR_BACKEND:${{ github.sha }}
+
+      - name: Build & push frontend
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          docker build -t $REGISTRY/$ECR_FRONTEND:${{ github.sha }} ./frontend
+          docker push $REGISTRY/$ECR_FRONTEND:${{ github.sha }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name notes-app-cluster --region ${{ env.AWS_REGION }}
+
+      - name: Create Mongo secret
+        run: |
+          kubectl create secret generic mongo-secret \
+            --from-literal=uri="${{ secrets.MONGO_URI }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy to EKS
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          kubectl set image deployment/notes-backend backend=$REGISTRY/$ECR_BACKEND:${{ github.sha }}
+          kubectl set image deployment/notes-frontend frontend=$REGISTRY/$ECR_FRONTEND:${{ github.sha }}
