@@ -64,4 +64,14 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Readiness probe
+router.get('/readiness', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+// Liveness probe
+router.get('/liveness', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 module.exports = router;

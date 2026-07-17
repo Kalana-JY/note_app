@@ -9,6 +9,10 @@ RUN npm install --omit=dev
 # Copy the rest of the app
 COPY . .
 
+# Create non-root user and group
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
 EXPOSE 5000
 
 CMD ["node", "server.js"]

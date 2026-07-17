@@ -9,9 +9,9 @@ const MONGO_URI = process.env.MONGO_URI;
 
 app.use(express.json());
 
-// Health check - useful for Kubernetes liveness/readiness probes later
+// Health check - for Kubernetes liveness/readiness probe
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.status(200).json({ status: 'ok' });
 });
 
 app.use('/notes', notesRouter);
