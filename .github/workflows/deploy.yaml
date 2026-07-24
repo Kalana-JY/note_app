@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: ap-south-1
   IMAGE_BACKEND: notes-backend
   IMAGE_FRONTEND: notes-frontend
 
