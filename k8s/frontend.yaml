@@ -1,3 +1,4 @@
+# frontend deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,8 +17,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          # Replace with your actual ECR image URI, e.g., <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/notes-frontend:latest
-          image: notes-frontend:latest
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/notes-frontend:latest
           ports:
             - containerPort: 3000
           env:
@@ -46,6 +46,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
 ---
+# frontend service
 apiVersion: v1
 kind: Service
 metadata:

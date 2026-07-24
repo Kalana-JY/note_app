@@ -1,3 +1,4 @@
+# backend deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,8 +17,7 @@ spec:
     spec:
       containers:
         - name: backend
-          # Replace with your actual ECR image URI, e.g., <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/notes-backend:latest
-          image: notes-backend:latest
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/notes-backend:latest
           ports:
             - containerPort: 5000
           env:
@@ -48,6 +48,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
 ---
+# backend service
 apiVersion: v1
 kind: Service
 metadata:
